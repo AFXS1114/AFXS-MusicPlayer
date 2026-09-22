@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/contexts/ThemeContext';
 import { AppHeader } from '@/components/UI';
@@ -27,6 +28,7 @@ interface ToolCard {
 export default function ToolsScreen() {
   const { theme } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const tools: ToolCard[] = [
     {
@@ -35,34 +37,39 @@ export default function ToolsScreen() {
       description: 'Scan and update your music library from device storage',
       icon: 'radar',
       status: 'available',
+      onPress: () => router.push('/(tabs)'),
     },
     {
       id: 'metadata',
       title: 'Metadata Fixer',
       description: 'Review and correct song titles, artists, albums, and tags',
       icon: 'edit',
-      status: 'coming_soon',
+      status: 'available',
+      onPress: () => router.push('/metadata' as any),
     },
     {
       id: 'organizer',
       title: 'Music Organizer',
       description: 'Arrange files into structured folders by artist and album',
       icon: 'create-new-folder',
-      status: 'coming_soon',
+      status: 'available',
+      onPress: () => router.push('/organizer' as any),
     },
     {
       id: 'artwork',
       title: 'Artwork Manager',
       description: 'View and update album artwork for your songs',
       icon: 'image',
-      status: 'coming_soon',
+      status: 'available',
+      onPress: () => router.push('/artwork-manager' as any),
     },
     {
       id: 'duplicates',
       title: 'Duplicate Finder',
       description: 'Detect and review possible duplicate tracks in your library',
       icon: 'content-copy',
-      status: 'coming_soon',
+      status: 'available',
+      onPress: () => router.push('/duplicates' as any),
     },
     {
       id: 'lyrics',

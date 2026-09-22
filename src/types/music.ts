@@ -91,6 +91,10 @@ export interface OrganizationHistoryEntry {
   status: 'pending' | 'completed' | 'failed' | 'undone';
   errorMessage: string | null;
   performedAt: number;
+  executedAt?: number;
+  filesMoved?: number;
+  pattern?: string;
+  isUndone?: boolean;
 }
 
 // Extended song type with favorite/history metadata
@@ -99,3 +103,72 @@ export interface SongWithMeta extends Song {
   lastPlayedAt?: number | null;
   playCount?: number;
 }
+
+// ─── Phase 2: Metadata Fixer ───────────────────────────────────────────────
+
+export interface MetadataUpdate {
+  songId: number;
+  title?: string;
+  artist?: string;
+  album?: string;
+  albumArtist?: string;
+  genre?: string;
+  year?: number | null;
+  trackNumber?: number | null;
+  discNumber?: number | null;
+}
+
+export interface MetadataQuality {
+  song: Song;
+  score: number; // 0–100
+  missingFields: string[];
+  suggestions: Partial<MetadataUpdate>;
+  hasFilenameSuggestion?: boolean;
+}
+
+// ─── Phase 2: Duplicate Finder ─────────────────────────────────────────────
+
+export type DuplicateMatchReason =
+  | 'exact_filename'
+  | 'title_artist'
+  | 'duration_size'
+  | 'combined';
+
+export interface DuplicateGroup {
+  id: string;
+  groupId?: string;
+  songs: Song[];
+  confidence: number; // 0–100
+  matchReason: DuplicateMatchReason;
+}
+
+// ─── Phase 2: Music Organizer ──────────────────────────────────────────────
+
+export interface FileMoveItem {
+  songId: number;
+  songTitle: string;
+  oldPath: string;
+  newPath: string;
+  targetFolder: string;
+}
+
+export interface MovePlan {
+  totalFiles: number;
+  itemsToMove: FileMoveItem[];
+  itemsSkipped: FileMoveItem[];
+}
+
+// ─── Phase 2: Artwork Manager ──────────────────────────────────────────────
+
+export interface ArtworkStatus {
+  albumTitle: string;
+  albumArtist: string;
+  album: string;
+  artist: string;
+  songCount: number;
+  hasArtwork: boolean;
+  isCustom?: boolean;
+  artworkUri: string | null;
+  songs: Song[];
+}
+

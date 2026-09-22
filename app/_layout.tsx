@@ -43,6 +43,10 @@ function AppContent() {
             presentation: 'modal',
           }}
         />
+        <Stack.Screen name="metadata" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="organizer" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="artwork-manager" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="duplicates" options={{ animation: 'slide_from_right' }} />
       </Stack>
     </View>
   );

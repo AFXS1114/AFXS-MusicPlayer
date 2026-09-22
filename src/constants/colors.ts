@@ -31,3 +31,29 @@ export function makeGlow(hex: string): string {
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r},${g},${b},0.18)`;
 }
+
+export const Colors = {
+  bg: {
+    deep: '#080808',
+    surface: '#111111',
+    card: '#161616',
+    border: '#242424',
+  },
+  text: {
+    primary: '#F0F0F0',
+    secondary: '#909090',
+    muted: '#555555',
+  },
+  accent: {
+    cyan: '#00E5FF',
+    purple: '#D500F9',
+    gold: '#FFD700',
+    blue: '#2979FF',
+  },
+  status: {
+    success: '#30D158',
+    error: '#FF3B30',
+    warning: '#FF9F0A',
+  },
+};
+
