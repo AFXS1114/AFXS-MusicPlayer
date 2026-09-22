@@ -4,6 +4,7 @@
 import * as MediaLibrary from 'expo-media-library/legacy';
 import { upsertSong, markSongDeleted, getAllSongUris } from '@/database/daos/songDao';
 import { saveArtworkBase64, artworkExists } from '@/services/artwork/ArtworkManager';
+import { readAudioFileTags } from '@/services/metadata/AudioTagReader';
 
 export type ScanStatus = 'idle' | 'scanning' | 'completed' | 'error';
 
@@ -78,26 +79,21 @@ export async function scanMusicLibrary(
         const isModified = existing && existing.dateModified !== modifiedMs;
 
         if (isNew || isModified) {
-          // Get full asset info for more metadata
-          let info: MediaLibrary.AssetInfo | null = null;
-          try {
-            info = await MediaLibrary.getAssetInfoAsync(asset);
-          } catch {
-            // Fall back to asset data
-          }
+          // Parse embedded audio tags & extract artwork
+          const tags = await readAudioFileTags(uri, asset.filename, asset.duration);
 
           const songId = await upsertSong({
             uri,
             filename: asset.filename,
-            title: cleanString(asset.filename.replace(/\.[^/.]+$/, '')),
-            artist: null,
-            album: null,
-            albumArtist: null,
-            genre: null,
-            year: null,
-            trackNumber: null,
-            discNumber: null,
-            duration: Math.round(asset.duration * 1000),
+            title: tags.title,
+            artist: tags.artist,
+            album: tags.album,
+            albumArtist: tags.albumArtist,
+            genre: tags.genre,
+            year: tags.year,
+            trackNumber: tags.trackNumber,
+            discNumber: tags.discNumber,
+            duration: tags.durationMs || Math.round(asset.duration * 1000),
             artworkUri: null,
             dateAdded: asset.creationTime * 1000,
             dateModified: modifiedMs,
@@ -110,9 +106,9 @@ export async function scanMusicLibrary(
             progress.updatedFiles++;
           }
 
-          // Extract artwork if not cached
-          if (songId && !(await artworkExists(songId))) {
-            await extractAndCacheArtwork(songId, uri);
+          // Save extracted embedded cover photo to artwork cache
+          if (songId && tags.pictureBase64 && !(await artworkExists(songId))) {
+            await saveArtworkBase64(songId, tags.pictureBase64);
           }
         }
 
@@ -120,6 +116,7 @@ export async function scanMusicLibrary(
         if (progress.processed % 10 === 0) report();
       }
     }
+
 
     // 3. Mark deleted files
     for (const uri of existingMap.keys()) {
