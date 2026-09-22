@@ -2,7 +2,6 @@
 // AudioTagReader — parses ID3, MP4, FLAC, Vorbis metadata & extracts embedded artwork
 
 import * as FileSystem from 'expo-file-system/legacy';
-import { Buffer } from 'buffer';
 import { parseBuffer } from 'music-metadata';
 import { suggestFixFromFilename } from './MetadataService';
 
@@ -17,6 +16,27 @@ export interface ExtractedAudioMetadata {
   discNumber: number | null;
   durationMs: number;
   pictureBase64: string | null;
+}
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const len = bytes.byteLength;
+  const chunkSize = 8192;
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, chunk as any);
+  }
+  return btoa(binary);
 }
 
 export async function readAudioFileTags(
@@ -44,8 +64,8 @@ export async function readAudioFileTags(
     });
 
     if (base64Str) {
-      const buf = Buffer.from(base64Str, 'base64');
-      const parsed = await parseBuffer(buf);
+      const uint8 = base64ToUint8Array(base64Str);
+      const parsed = await parseBuffer(uint8);
 
       if (parsed && parsed.common) {
         const c = parsed.common;
@@ -63,7 +83,7 @@ export async function readAudioFileTags(
 
         // Extract embedded cover photo
         if (c.picture && c.picture.length > 0 && c.picture[0].data) {
-          pictureBase64 = Buffer.from(c.picture[0].data).toString('base64');
+          pictureBase64 = uint8ArrayToBase64(c.picture[0].data);
         }
       }
 
